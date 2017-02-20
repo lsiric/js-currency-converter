@@ -1,0 +1,34 @@
+{
+  "name": "js-currency-converter",
+  "version": "1.0.0",
+  "description": "Javascript module for currency conversion, based on free.currencyconverterapi.com",
+  "main": "js-currency-converter.js",
+  "scripts": {
+    "test": "npm test",
+    "build": "gulp build",
+    "lint": "gulp eslint",
+    "jsdoc": "jsdoc ./src -d ./docs"
+  },
+  "keywords": [
+    "currency",
+    "exchange",
+    "rate",
+    "money",
+    "currencies"
+  ],
+  "author": "Luka Siric",
+  "license": "ISC",
+  "dependencies": {
+    "jquery": "^3.1.1"
+  },
+  "devDependencies": {
+    "eslint": "^3.9.1",
+    "eslint-html-reporter": "^0.5.2",
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.1",
+    "gulp-eslint": "^3.0.1",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^2.0.1",
+    "jsdoc": "^3.4.3"
+  }
+}

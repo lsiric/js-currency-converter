@@ -1,0 +1,26 @@
+{
+  "env": {
+	"browser": true,
+	"jasmine": true
+  },
+  "extends": [
+	"eslint:recommended",
+  ],
+  "globals": {
+	"module": false,
+	"inject": false,
+	"define": true,
+	"require": true
+  },
+  "rules": {
+	"semi": 2,
+	"quotes": [2, "single"],
+	"no-console": ["error", { "allow": ["warn", "error"] }],
+	"no-undef": "error",
+	"no-unused-vars": ["error", {"vars": "all", "args": "none"}],
+	"no-extra-boolean-cast": "error",
+	"eqeqeq":["error", "smart"],
+	"complexity":["off",  {"max":7}],
+	"no-use-before-define": 0
+  }
+}
