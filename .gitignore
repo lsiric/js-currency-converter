@@ -1,6 +1,5 @@
 /node_modules
 /misc
-/spec
 debug.log
 npm-debug.log
 *.log
