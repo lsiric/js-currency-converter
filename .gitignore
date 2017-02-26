@@ -1,6 +1,6 @@
 /node_modules
 /misc
-/spec/coverage
+/spec
 debug.log
 npm-debug.log
 *.log

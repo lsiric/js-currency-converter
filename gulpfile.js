@@ -1,6 +1,8 @@
 var MODULE_NAME = require('./package.json').name,
 	PATHS = {
+		jquery: './node_modules/jquery/dist/jquery.js',
 		js: './src/**/*.js',
+		demo: './demo',
 		build: './build',
 		eslintConfigFile: '.eslintrc'
 	},
@@ -8,7 +10,8 @@ var MODULE_NAME = require('./package.json').name,
 	concat = require('gulp-concat'),
 	rename = require('gulp-rename'),
 	uglify = require('gulp-uglify'),
-	eslint = require('gulp-eslint')
+	eslint = require('gulp-eslint'),
+	exec = require('child_process').exec,
 	karmaServer = require('karma').Server;
 
 gulp.task('scripts', ['eslint'], function() {  
@@ -40,5 +43,16 @@ gulp.task('test', function (done) {
 		configFile: __dirname + '/karma.config.js'
 	}, done).start();
 });
+
+gulp.task('demo-build', ['build'], function () {
+	return gulp.src([PATHS.jquery, PATHS.build + '/' + MODULE_NAME + '.js'])
+		.pipe(gulp.dest(PATHS.demo));
+});
+
+gulp.task('demo-server', function () {
+	return exec(' http-server ./demo -p 8080 --cors -P \'http://free.currencyconverterapi.com/api/v3\' -o');
+});
+
+gulp.task('demo', ['demo-build', 'demo-server']);
 
 gulp.task('default', ['build']);

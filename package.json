@@ -4,9 +4,10 @@
   "description": "Javascript module for currency conversion, based on free.currencyconverterapi.com",
   "main": "js-currency-converter.js",
   "scripts": {
-    "test": "gulp test",
+    "test":  "gulp test",
     "build": "gulp build",
-    "lint": "gulp eslint",
+    "lint":  "gulp eslint",
+    "demo":  "gulp demo",
     "jsdoc": "jsdoc ./src -d ./docs"
   },
   "keywords": [
@@ -29,6 +30,7 @@
     "gulp-eslint": "^3.0.1",
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^2.0.1",
+    "http-server": "^0.9.0",
     "jasmine-core": "^2.5.2",
     "jsdoc": "^3.4.3",
     "karma": "^1.5.0",

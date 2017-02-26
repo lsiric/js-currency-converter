@@ -2,8 +2,8 @@
 <html>
 <head>
 	<title>js-currency-converter Demo</title>
-	<script type="text/javascript" src="../node_modules/jquery/dist/jquery.js"></script>
-	<script type="text/javascript" src="../build/js-currency-converter.js"></script>
+	<script type="text/javascript" src="jquery.js"></script>
+	<script type="text/javascript" src="js-currency-converter.js"></script>
 </head>
 <body style="font-size: 38px;">
 <h4>Converting 100 EUR to USD</h4>
@@ -21,7 +21,9 @@
 
 	<script type="text/javascript">
 
-		var converter = CurrencyConverter();
+		var converter = CurrencyConverter({
+			API_URL : '/convert?compact=y&q='
+		});
 
 		converter.convertAmount(100, 'USD', 'EUR')
 		.done(function (response) {
