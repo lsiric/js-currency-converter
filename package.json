@@ -12,10 +12,13 @@
   },
   "keywords": [
     "currency",
-    "exchange",
-    "rate",
-    "money",
     "currencies"
+    "exchange",
+    "convert",
+    "converter",
+    "rate",
+    "rates",
+    "money"
   ],
   "author": "Luka Siric",
   "license": "ISC",
