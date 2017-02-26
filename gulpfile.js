@@ -8,15 +8,16 @@ var MODULE_NAME = require('./package.json').name,
 	concat = require('gulp-concat'),
 	rename = require('gulp-rename'),
 	uglify = require('gulp-uglify'),
-	eslint = require('gulp-eslint');
+	eslint = require('gulp-eslint')
+	karmaServer = require('karma').Server;
 
 gulp.task('scripts', ['eslint'], function() {  
-    return gulp.src([PATHS.js])
-        .pipe(concat(MODULE_NAME + '.js'))
-        .pipe(gulp.dest(PATHS.build))
-        .pipe(rename(MODULE_NAME + '.min.js'))
-        .pipe(uglify())
-        .pipe(gulp.dest(PATHS.build));
+	return gulp.src([PATHS.js])
+		.pipe(concat(MODULE_NAME + '.js'))
+		.pipe(gulp.dest(PATHS.build))
+		.pipe(rename(MODULE_NAME + '.min.js'))
+		.pipe(uglify())
+		.pipe(gulp.dest(PATHS.build));
 });
 
 gulp.task('build', ['scripts'], function () {
@@ -32,6 +33,12 @@ gulp.task('eslint', function () {
 		.pipe(eslint.format())
 		.pipe(eslint.failAfterError());
 
+});
+
+gulp.task('test', function (done) {
+	new karmaServer({
+		configFile: __dirname + '/karma.config.js'
+	}, done).start();
 });
 
 gulp.task('default', ['build']);

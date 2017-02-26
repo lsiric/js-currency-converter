@@ -8,63 +8,89 @@
 	 */
 	define(['jquery'], function ($) {
 
-		return (function () {
+		return (function (settings) {
 
 			var HOURS = 60 * 60 * 1000,
-				SETTINGS = {
-					RATES_VALIDITY_HOURS : HOURS * 24,
-					CACHE_TO_LOCAL_STORAGE : true,
-					LOCAL_STORAGE_VARIABLE_NAME : 'JS_CURRENCY_CONVERTER_CACHED_RATES',
-					API_URL : 'http://free.currencyconverterapi.com/api/v3/convert?compact=y&q=',
+				DEFAULTS = {
+					RATES_VALIDITY_HOURS : 24,
+					CACHE_TO_LOCAL_STORAGE : false,
+					LOCAL_STORAGE_VARIABLE_NAME: 'JS_CURRENCY_CONVERTER_CACHED_RATES',
+					API_URL : 'http://free.currencyconverterapi.com/api/v3/convert?compact=y&q='
 				},
-				CACHED_RATES = SETTINGS.CACHE_TO_LOCAL_STORAGE ? (getFromLocalStorage(SETTINGS.LOCAL_STORAGE_VARIABLE_NAME) || {}) : {},
+				SETTINGS = $.extend({}, DEFAULTS, settings),
+				CACHED_RATES = {},
 				CONVERSIONS_IN_PROGRESS = {};
-
-
 
 			var CurrencyConverter = {};
 
+			// MAIN FUNCTIONS
 			CurrencyConverter.config = config;
+			CurrencyConverter.getConfig = getConfig;
+
 			CurrencyConverter.getRate = getRate;
 			CurrencyConverter.fetchQuote = fetchQuote;
 			CurrencyConverter.convertAmount = convertAmount;
+
+			// API CONVERSION IN PROGRESS
+			CurrencyConverter.isConversionInProgress = isConversionInProgress;
+			CurrencyConverter.setConversionInProgress = setConversionInProgress;
+			CurrencyConverter.getConversionInProgress = getConversionInProgress;
+
+			// CACHE HELPERS
+			CurrencyConverter.cacheToLocalStorage = cacheToLocalStorage;
+			CurrencyConverter.cacheFromLocalStorage = cacheFromLocalStorage;
+
+			CurrencyConverter.isCachedRateValid = isCachedRateValid;
+			CurrencyConverter.isRateCached = isRateCached;
+			CurrencyConverter.isCachedRateExpired = isCachedRateExpired;
+
+			CurrencyConverter.cacheRate = cacheRate;
+			CurrencyConverter.getRateFromCache = getRateFromCache;
+
+			// UTILITIES
+			CurrencyConverter.toQuery = toQuery;
+			CurrencyConverter.isObject = isObject;
+			CurrencyConverter.isString = isString;
+			CurrencyConverter.setToLocalStorage = setToLocalStorage;
+			CurrencyConverter.getFromLocalStorage = getFromLocalStorage;
+			CurrencyConverter.isLocalStorageAvailable = isLocalStorageAvailable;
+
+			if(SETTINGS.CACHE_TO_LOCAL_STORAGE) {
+				CurrencyConverter.cacheFromLocalStorage();
+			}
 
 			return CurrencyConverter;
 
 
 
-		// ======================== Exposed Functions ========================
+			/**
+			* @function config
+			* @description Overrides default CurrencyConverter settings
+			* @param {object} settings Overrides CurrencyConverter settings object 
+			* @property {number} settings.CACHE_TO_LOCAL_STORAGE Cache conversion rate to local storage, if available
+			* @property {number} settings.RATES_VALIDITY_HOURS Cached conversion rate validity in hours
+			* @property {string} settings.LOCAL_STORAGE_VARIABLE_NAME Variable name where the rates will be cached in local storage
+			* @property {string} settings.API_URL API Endpoint url
+			*/
+			function config (options) {
+				if (CurrencyConverter.isObject(options)) {
+					SETTINGS = $.extend(SETTINGS, options);
+				}
+			}
+
+
 
 			/**
-			* @function convertAmount
-			* @description Converts given amount from given currency to given currency
-			* @param {number} amount Amount of money converting
-			* @param {string} fromCurrency Currency converting from
-			* @param {string} toCurrency Currency converting to
-			* @return {Promise<conversionObject>} Promise to the conversionObject
-			* @property {number} conversionObject.value converted amount
-			* @property {number} conversionObject.rate conversion rate
-			* @property {boolean} conversionObject.expired is the rate expired (considering RATES_VALIDITY_HOURS)
+			* @function getConfig
+			* @description Returns CurrencyConverter settings object
+			* @return {settings} 
+			* @property {number} settings.CACHE_TO_LOCAL_STORAGE Cache conversion rate to local storage, if available
+			* @property {number} settings.RATES_VALIDITY_HOURS Cached conversion rate validity in hours
+			* @property {string} settings.LOCAL_STORAGE_VARIABLE_NAME Variable name where the rates will be cached in local storage
+			* @property {string} settings.API_URL API Endpoint url
 			*/
-			function convertAmount (amount, fromCurrency, toCurrency) {
-
-				var deferred = $.Deferred();
-
-				getRate(fromCurrency, toCurrency)
-				.done(onSuccess)
-				.fail(onError);
-
-				return deferred.promise()	;
-
-				function onSuccess (data) {
-					data.value = amount * data.rate;
-					deferred.resolve(data);
-				}
-
-				function onError (error) {
-					deferred.reject(error);
-				}
-
+			function getConfig () {
+				return SETTINGS;
 			}
 
 
@@ -79,13 +105,11 @@
 			function fetchQuote (fromCurrency, toCurrency) {
 
 				var deferred = $.Deferred();
-				var query = toQuery(fromCurrency, toCurrency);
+				var query = CurrencyConverter.toQuery(fromCurrency, toCurrency);
 
 				// If the call for the same converesion is in progress, return the same promise
-				var inProgressPromise = getConversionInProgress(query);
-
-				if(inProgressPromise) {
-					return inProgressPromise;
+				if(CurrencyConverter.isConversionInProgress(query)) {
+					return CurrencyConverter.getConversionInProgress(query);
 				}
 
 				$.get(SETTINGS.API_URL + query)
@@ -94,13 +118,13 @@
 				.always(onAlways);
 
 				// cache the promise, in case it gets called while this one is in progress
-				setConversionInProgress(query, deferred.promise());
+				CurrencyConverter.setConversionInProgress(query, deferred.promise());
 
 				return deferred.promise()	;
 
 				function onSuccess (response) {
 					// cache the result
-					cacheRate(query, response[query].val);
+					CurrencyConverter.cacheRate(query, response[query].val, new Date());
 					deferred.resolve(response[query].val);
 				}
 
@@ -110,7 +134,7 @@
 
 				function onAlways () {
 					// dereference API call which was in progress
-					setConversionInProgress(query, null);
+					CurrencyConverter.setConversionInProgress(query, null);
 				}
 
 			}
@@ -131,15 +155,15 @@
 			function getRate (fromCurrency, toCurrency) {
 
 				var deferred = $.Deferred();
-				var query = toQuery(fromCurrency, toCurrency);
+				var query = CurrencyConverter.toQuery(fromCurrency, toCurrency);
 
 				// if there' a non-expired rate in the cache, return it
-				if(isRateValid(query)) {
+				if(CurrencyConverter.isCachedRateValid(query)) {
 					resolveRate(false, CACHED_RATES[query].value);
 				}
 				// otherwise fetch it from the api 
 				else {
-					fetchQuote(fromCurrency, toCurrency)
+					CurrencyConverter.fetchQuote(fromCurrency, toCurrency)
 					.done(fetchOnSuccess)
 					.fail(oldRateFallback);
 				}
@@ -154,7 +178,7 @@
 				function oldRateFallback (error) {
 
 					// if rate is cached but expired, resolve old rate
-					if(isRateCached(query)){
+					if(CurrencyConverter.isRateCached(query)){
 						resolveRate(true, CACHED_RATES[query].value);
 					} else {
 						deferred.reject(error);
@@ -174,64 +198,105 @@
 
 
 			/**
-			* @function config
-			* @description Overrides default CurrencyConverter settings
-			* @param {options} fromCurrency Currency converting from
-			* @property {number} options.CACHE_TO_LOCAL_STORAGE Cache conversion rate to local storage, if available
-			* @property {number} options.RATES_VALIDITY_HOURS Cached conversion rate validity in hours
-			* @property {number} options.LOCAL_STORAGE_VARIABLE_NAME Local storage variable name for cached conversion rates object
-			* @property {number} options.API_URL API Endpoint url
+			* @function convertAmount
+			* @description Converts given amount from given currency to given currency
+			* @param {number} amount Amount of money converting
+			* @param {string} fromCurrency Currency converting from
+			* @param {string} toCurrency Currency converting to
+			* @return {Promise<conversionObject>} Promise to the conversionObject
+			* @property {number} conversionObject.value converted amount
+			* @property {number} conversionObject.rate conversion rate
+			* @property {boolean} conversionObject.expired is the rate expired (considering RATES_VALIDITY_HOURS)
 			*/
-			function config (options) {
-				if (isObject(options)) {
-					SETTINGS = $.extend(SETTINGS, options);
+			function convertAmount (amount, fromCurrency, toCurrency) {
+
+				var deferred = $.Deferred();
+
+				CurrencyConverter.getRate(fromCurrency, toCurrency)
+				.done(onSuccess)
+				.fail(onError);
+
+				return deferred.promise()	;
+
+				function onSuccess (data) {
+					data.value = amount * data.rate;
+					deferred.resolve(data);
 				}
+
+				function onError (error) {
+					deferred.reject(error);
+				}
+
 			}
 
 
 
-		// ============================== HELPERS ==============================
 
+		// API CONVERSION IN PROGRESS
 			function setConversionInProgress (query, promise) {
 				CONVERSIONS_IN_PROGRESS[query] = promise;
+			}
+
+			function isConversionInProgress (query) {
+				return Boolean(CurrencyConverter.getConversionInProgress(query));
 			}
 
 			function getConversionInProgress (query) {
 				return CONVERSIONS_IN_PROGRESS[query];
 			}
+
+
+
 			
-			function toQuery (fromCurrency, toCurrency) {
-				return (fromCurrency || '') + '_' + (toCurrency || '');
-			}
+		// CACHE
 
 			function isRateCached (queryCode) {
-				return isObject(CACHED_RATES[queryCode]);
+				return CurrencyConverter.isObject(CACHED_RATES[queryCode]);
 			}
 
-			function isRateExpired (rate) {
-				// if the rate is from local storage, then it's a string
-				var compareDate = isString(rate.date) ? new Date(rate.date) : rate.date;
-				return (new Date().getTime() - compareDate.getTime()) > SETTINGS.RATES_VALIDITY_HOURS;
+			function isCachedRateExpired (dateString) {
+				// when the rate is fetched from local storage, the date is a String
+				var cachedRateDateTime = new Date(dateString).getTime();
+				var nowDateTime = new Date().getTime();
+				return (nowDateTime - cachedRateDateTime) > (SETTINGS.RATES_VALIDITY_HOURS * HOURS);
 			}
 
-			function isRateValid (queryCode) {
-				return isObject(CACHED_RATES[queryCode]) 
-					&& !isRateExpired(CACHED_RATES[queryCode]);
+			function isCachedRateValid (queryCode) {
+				return CurrencyConverter.isRateCached(queryCode) 
+					&& !CurrencyConverter.isCachedRateExpired(CACHED_RATES[queryCode].date);
 			}
 
-			function cacheRate (rateName, value) {
+			function cacheRate (rateName, value, date) {
 				CACHED_RATES[rateName] = {
 					value: value,
-					date: new Date()
+					date: date
 				};
 				if(SETTINGS.CACHE_TO_LOCAL_STORAGE) {
-					saveToLocalStorage(SETTINGS.LOCAL_STORAGE_VARIABLE_NAME, CACHED_RATES);
+					CurrencyConverter.cacheToLocalStorage();
 				}
 			}
 
+			function getRateFromCache (query) {
+				return CACHED_RATES[query];
+			}
+
+			function cacheToLocalStorage () {
+				CurrencyConverter.setToLocalStorage(SETTINGS.LOCAL_STORAGE_VARIABLE_NAME, CACHED_RATES);
+			}
+
+			function cacheFromLocalStorage () {
+				CACHED_RATES = getFromLocalStorage(SETTINGS.LOCAL_STORAGE_VARIABLE_NAME) || {};
+			}
 
 
-		// ============================== UTILS ================================
+
+
+
+		// UTILITIES
+
+			function toQuery (fromCurrency, toCurrency) {
+				return (fromCurrency || '') + '_' + (toCurrency || '');
+			}
 
 			function isObject(value) {
 				return value !== null && typeof value === 'object';
@@ -241,8 +306,8 @@
 				return typeof value === 'string';
 			}
 
-			function saveToLocalStorage (key, value) {
-				if (isLocalStorageAvailable()) {
+			function setToLocalStorage (key, value) {
+				if (CurrencyConverter.isLocalStorageAvailable()) {
 					localStorage.setItem(key, JSON.stringify(value));
 				} else {
 					console.error('Caching rates to local storage failed. Local storage not available');
@@ -250,8 +315,12 @@
 			}
 
 			function getFromLocalStorage (key) {
-				if (isLocalStorageAvailable()) {
-					return JSON.parse(localStorage.getItem(key));
+				if (CurrencyConverter.isLocalStorageAvailable()) {
+					try {
+						return JSON.parse(localStorage.getItem(key)) || {};
+					} catch (e) {
+						return {};
+					}
 				} else {
 					console.error('Retrieving rates from local storage failed. Local storage not available');
 				}
@@ -268,10 +337,11 @@
 				}
 			}
 
-		})(); 
+		});
 	});
 
 }(typeof define === 'function' && define.amd ? define : function (deps, factory) {
+	/* istanbul ignore next */
 	if (typeof module !== 'undefined' && module.exports) {
 		module.exports = factory(require('jquery'));
 	} else {

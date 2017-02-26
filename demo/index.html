@@ -3,7 +3,7 @@
 <head>
 	<title>js-currency-converter Demo</title>
 	<script type="text/javascript" src="../node_modules/jquery/dist/jquery.js"></script>
-	<script type="text/javascript" src="../build/js-currency-converter.min.js"></script>
+	<script type="text/javascript" src="../build/js-currency-converter.js"></script>
 </head>
 <body style="font-size: 38px;">
 <h4>Converting 100 EUR to USD</h4>
@@ -21,7 +21,9 @@
 
 	<script type="text/javascript">
 
-		CurrencyConverter.convertAmount(100, 'USD', 'EUR')
+		var converter = CurrencyConverter();
+
+		converter.convertAmount(100, 'USD', 'EUR')
 		.done(function (response) {
 			document.getElementById('converted1').innerHTML = response.value;
 		})
@@ -29,7 +31,7 @@
 			console.error(error);
 		});
 
-		CurrencyConverter.fetchQuote('USD', 'EUR')
+		converter.fetchQuote('USD', 'EUR')
 		.done(function (rate) {
 			document.getElementById('converted2').innerHTML = rate;
 		})
@@ -37,7 +39,7 @@
 			console.error(error);
 		});
 
-		CurrencyConverter.getRate('USD', 'EUR')
+		converter.getRate('USD', 'EUR')
 		.done(function (response) {
 			document.getElementById('converted3').innerHTML = response.rate;
 		})
