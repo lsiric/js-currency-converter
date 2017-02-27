@@ -25,7 +25,9 @@ gulp.task('scripts', ['eslint'], function() {
 });
 
 gulp.task('build', ['scripts'], function () {
-	console.log(MODULE_NAME, 'built');
+	return exec('npm run jsdoc', function () {
+		console.log(MODULE_NAME, ' built!');
+	});
 });
 
 gulp.task('eslint', function () {
@@ -51,7 +53,7 @@ gulp.task('demo-build', ['build'], function () {
 });
 
 gulp.task('demo', ['demo-build'], function () {
-	exec(' http-server ./demo -p 8080 --cors -P \'http://free.currencyconverterapi.com/api/v3\' -o -c -1');
+	exec(' http-server ./demo -p 8080 --cors -P \'http://free.currencyconverterapi.com/api/v3\' -o -c-1');
 });
 
 gulp.task('default', ['build']);
