@@ -1,4 +1,5 @@
 var MODULE_NAME = require('./package.json').name,
+	VERSION = require('./package.json').version,
 	PATHS = {
 		jquery: './node_modules/jquery/dist/jquery.js',
 		js: './src/**/*.js',
@@ -49,10 +50,8 @@ gulp.task('demo-build', ['build'], function () {
 		.pipe(gulp.dest(PATHS.demo));
 });
 
-gulp.task('demo-server', function () {
-	return exec(' http-server ./demo -p 8080 --cors -P \'http://free.currencyconverterapi.com/api/v3\' -o');
+gulp.task('demo', ['demo-build'], function () {
+	exec(' http-server ./demo -p 8080 --cors -P \'http://free.currencyconverterapi.com/api/v3\' -o -c -1');
 });
-
-gulp.task('demo', ['demo-build', 'demo-server']);
 
 gulp.task('default', ['build']);

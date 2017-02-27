@@ -4,7 +4,7 @@
 	/** 
 	 * @module CurrencyConverter
 	 * @description JavaScript currency converter
-	 * @version 1.0.0
+	 * @version 1.2.0
 	 */
 	define(['jquery'], function ($) {
 
@@ -15,9 +15,15 @@
 					RATES_VALIDITY_HOURS : 24,
 					CACHE_TO_LOCAL_STORAGE : false,
 					LOCAL_STORAGE_VARIABLE_NAME: 'JS_CURRENCY_CONVERTER_CACHED_RATES',
-					API_URL : 'http://free.currencyconverterapi.com/api/v3/convert?compact=y&q='
+					API: {
+						url: 'http://free.currencyconverterapi.com/api/v3/convert',
+						queryParams: {
+							compact: 'y',
+							apiKey: ''
+						}
+					}
 				},
-				SETTINGS = $.extend({}, DEFAULTS, settings),
+				SETTINGS = $.extend(true, DEFAULTS, settings),
 				CACHED_RATES = {},
 				CONVERSIONS_IN_PROGRESS = {};
 
@@ -53,6 +59,7 @@
 			CurrencyConverter.setToLocalStorage = setToLocalStorage;
 			CurrencyConverter.getFromLocalStorage = getFromLocalStorage;
 			CurrencyConverter.isLocalStorageAvailable = isLocalStorageAvailable;
+			CurrencyConverter.buildUrl = buildUrl;
 
 			if(SETTINGS.CACHE_TO_LOCAL_STORAGE) {
 				CurrencyConverter.cacheFromLocalStorage();
@@ -69,7 +76,11 @@
 			* @property {number} settings.CACHE_TO_LOCAL_STORAGE Cache conversion rate to local storage, if available
 			* @property {number} settings.RATES_VALIDITY_HOURS Cached conversion rate validity in hours
 			* @property {string} settings.LOCAL_STORAGE_VARIABLE_NAME Variable name where the rates will be cached in local storage
-			* @property {string} settings.API_URL API Endpoint url
+			* @property {object} settings.API object API configuration object
+			* @property {string} settings.API.url API Endpoint url
+			* @property {object} settings.API.queryParams Query parameters key pair values
+			* @property {string} settings.API.queryParams.apiKey API key for non-free version of the API
+			* @property {string} settings.API.queryParams.compact API response object type
 			*/
 			function config (options) {
 				if (CurrencyConverter.isObject(options)) {
@@ -86,7 +97,11 @@
 			* @property {number} settings.CACHE_TO_LOCAL_STORAGE Cache conversion rate to local storage, if available
 			* @property {number} settings.RATES_VALIDITY_HOURS Cached conversion rate validity in hours
 			* @property {string} settings.LOCAL_STORAGE_VARIABLE_NAME Variable name where the rates will be cached in local storage
-			* @property {string} settings.API_URL API Endpoint url
+			* @property {object} settings.API object API configuration object
+			* @property {string} settings.API.url API Endpoint url
+			* @property {object} settings.API.queryParams Query parameters key pair values
+			* @property {string} settings.API.queryParams.apiKey API key for non-free version of the API
+			* @property {string} settings.API.queryParams.compact API response object type
 			*/
 			function getConfig () {
 				return SETTINGS;
@@ -111,7 +126,7 @@
 					return CurrencyConverter.getConversionInProgress(query);
 				}
 
-				$.get(SETTINGS.API_URL + query)
+				$.get(CurrencyConverter.buildUrl({q:query}))
 				.done(onSuccess)
 				.fail(onError)
 				.always(onAlways);
@@ -438,6 +453,22 @@
 				} catch(e) {
 					return false;
 				}
+			}
+
+
+			/**
+			* @function buildUrl
+			* @description Builds API endpoint url from SETTINGS.API.url, SETTINGS.API.queryParams, and query parameters passed in 
+			* @return {string}
+			* @param {object} queryParams Query parameter key pair values
+			*/					
+			function buildUrl (queryParams) {
+				var url = SETTINGS.API.url + '?';
+				var params = $.extend({}, SETTINGS.API.queryParams, queryParams);
+				$.each(params, function (key, value, i) {
+					url += key + '=' + value + '&';
+				});
+				return url;
 			}
 
 		});

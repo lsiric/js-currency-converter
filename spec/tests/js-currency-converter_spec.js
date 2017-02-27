@@ -8,10 +8,16 @@ describe('CurrencyConverter', function() {
 	var converter = null;
 	var jQuery = window.$;
 	var defaultOptions = {
-		RATES_VALIDITY_HOURS: 24,
-		CACHE_TO_LOCAL_STORAGE: true,
-		LOCAL_STORAGE_VARIABLE_NAME: 'JS_CURRENCY_CONVERTER_CACHED_RATES', 
-		API_URL: 'http://free.currencyconverterapi.com/api/v3/convert?compact=y&q='
+		RATES_VALIDITY_HOURS : 24,
+		CACHE_TO_LOCAL_STORAGE : false,
+		LOCAL_STORAGE_VARIABLE_NAME: 'JS_CURRENCY_CONVERTER_CACHED_RATES',
+		API: {
+			url: 'http://free.currencyconverterapi.com/api/v3/convert',
+			queryParams: {
+				compact: 'y',
+				apiKey: ''
+			}
+		}
 	};
 
 	// TEST DATA
@@ -34,37 +40,6 @@ describe('CurrencyConverter', function() {
 		localStorage.clear();
 	});
 
-	// describe('init', function () {
-		
-	// 	it('should load rates from localStorage', function () {
-	// 		var rates = {
-	// 			'RANDOM_RATE': { 
-	// 				date: new Date, 
-	// 				value: 1
-	// 			}
-	// 		};
-	// 		localStorage.setItem(defaultOptions.LOCAL_STORAGE_VARIABLE_NAME, JSON.stringify(rates));
-
-	// 		var cachedRates = converter.getCachedRates();
-	// 		expect(cachedRates['RANDOM_RATE']).toEqual(jasmine.any(Object));
-	// 	});
-
-	// 	it('should not load rates from localStorage', function () {
-	// 		var rates = {
-	// 			'RANDOM_RATE': { 
-	// 				date: new Date, 
-	// 				value: 1
-	// 			}
-	// 		};
-	// 		localStorage.setItem(defaultOptions.LOCAL_STORAGE_VARIABLE_NAME, JSON.stringify(rates));
-
-	// 		converter = window.CurrencyConverter({CACHE_TO_LOCAL_STORAGE: false});
-	// 		var cachedRates = converter.getCachedRates();
-	// 		expect(cachedRates['RANDOM_RATE']).toBeUndefined();
-	// 	});
-
-	// });
-
 	describe('getConfig', function () {
 
 		it('should return default options', function() {
@@ -76,7 +51,13 @@ describe('CurrencyConverter', function() {
 				RATES_VALIDITY_HOURS: 5,
 				CACHE_TO_LOCAL_STORAGE: false, 
 				LOCAL_STORAGE_VARIABLE_NAME: 'RANDOM_NAME', 
-				API_URL: ''
+				API: {
+					url: '',
+					params: {
+						compact: 'n',
+						apiKey: '123123'
+					}
+				}
 			};
 			converter.config(overrides);
 			expect(converter.getConfig()).toEqual(overrides);
@@ -89,9 +70,15 @@ describe('CurrencyConverter', function() {
 		it('should override default options', function() {
 			var overrides = {
 				RATES_VALIDITY_HOURS: 5,
-				CACHE_TO_LOCAL_STORAGE: true, 
+				CACHE_TO_LOCAL_STORAGE: false, 
 				LOCAL_STORAGE_VARIABLE_NAME: 'RANDOM_NAME', 
-				API_URL: ''
+				API: {
+					url: '',
+					params: {
+						compact: 'n',
+						apiKey: '123123'
+					}
+				}
 			};
 			converter.config(overrides);
 			expect(converter.getConfig()).toEqual(overrides);
@@ -194,11 +181,11 @@ describe('CurrencyConverter', function() {
 			expect(converter.getConversionInProgress(query)).toBe(callInProgress);
 		});
 
-		it('should call default API_URL with EUR_USD query', function (done) {
+		it('should call default API.url with EUR_USD query', function (done) {
 			spyOn(jQuery, 'get').and.returnValue(jQuery.Deferred().resolve(serverResponse));
 
 			converter.fetchQuote(fromRate, toRate).done(function (result) {
-				expect(jQuery.get).toHaveBeenCalledWith(defaultOptions.API_URL + query);
+				expect(jQuery.get).toHaveBeenCalledWith(converter.buildUrl({q:query}));
 				done();
 			});
 		});
@@ -363,8 +350,10 @@ describe('CurrencyConverter', function() {
 			localStorage.clear();
 		});
 
-		it('should cache CurrencyConverter rate cache to local storage', function () {
+		it('should cache CurrencyConverter rate cache object to local storage', function () {
+			// save to cache object
 			converter.cacheRate(rateName, rate[rateName].value, rate[rateName].date);
+			// save to local storage
 			converter.cacheToLocalStorage();
 
 			expect(JSON.parse(localStorage.getItem(defaultOptions.LOCAL_STORAGE_VARIABLE_NAME))).toEqual({
@@ -393,9 +382,15 @@ describe('CurrencyConverter', function() {
 		});
 
 		it('should cache CurrencyConverter rate cache from local storage', function () {
-			// cache rate
+			// instantiate converter which will cache rates to local storage
+			converter = window.CurrencyConverter({
+				CACHE_TO_LOCAL_STORAGE: true
+			});
+
+			// cache to local storage
 			converter.cacheRate(rateName, rate[rateName].value, rate[rateName].date);
-			// new instance of the converter, with auto laod from cache
+
+			// new instance of the converter which will cache rates to local storage
 			converter = window.CurrencyConverter({
 				CACHE_TO_LOCAL_STORAGE: true
 			});
@@ -669,6 +664,22 @@ describe('CurrencyConverter', function() {
 			it('should return false', function () {
 				spyOn(localStorage, 'removeItem').and.throwError();
 				expect(converter.isLocalStorageAvailable()).toEqual(false);
+			});
+
+		});
+
+		describe('buildUrl', function () {
+			
+			it('should return url with default queryParams', function () {
+				expect(converter.buildUrl()).toEqual('http://free.currencyconverterapi.com/api/v3/convert?compact=y&apiKey=&');
+			});
+
+			it('should return url with default queryParams', function () {
+				var queryParams = {
+					a: 1,
+					b: 2
+				};
+				expect(converter.buildUrl(queryParams)).toEqual('http://free.currencyconverterapi.com/api/v3/convert?compact=y&apiKey=&a=1&b=2&');
 			});
 
 		});

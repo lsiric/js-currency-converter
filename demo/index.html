@@ -22,7 +22,7 @@
 	<script type="text/javascript">
 
 		var converter = CurrencyConverter({
-			API_URL : '/convert?compact=y&q='
+			API : { url: '/convert' }
 		});
 
 		converter.convertAmount(100, 'USD', 'EUR')

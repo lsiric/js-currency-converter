@@ -12,7 +12,7 @@ jQuery is the only dependency, hence it has to be included **before** `js-curren
 
 ## Documentation
 
-**Version**: 1.1.0  
+**Version**: 1.2.0  
 
 * [CurrencyConverter](#module_CurrencyConverter)
     * [~config(settings)](#module_CurrencyConverter..config)
@@ -35,6 +35,7 @@ jQuery is the only dependency, hence it has to be included **before** `js-curren
     * [~setToLocalStorage(key, value)](#module_CurrencyConverter..setToLocalStorage) ⇒ <code>undefined</code>
     * [~getFromLocalStorage(key)](#module_CurrencyConverter..getFromLocalStorage) ⇒ <code>object</code>
     * [~isLocalStorageAvailable()](#module_CurrencyConverter..isLocalStorageAvailable) ⇒ <code>Boolean</code>
+    * [~buildUrl(queryParams)](#module_CurrencyConverter..buildUrl) ⇒ <code>string</code>
 
 <a name="module_CurrencyConverter..config"></a>
 
@@ -54,7 +55,11 @@ Overrides default CurrencyConverter settings
 | settings.CACHE_TO_LOCAL_STORAGE | <code>number</code> | Cache conversion rate to local storage, if available |
 | settings.RATES_VALIDITY_HOURS | <code>number</code> | Cached conversion rate validity in hours |
 | settings.LOCAL_STORAGE_VARIABLE_NAME | <code>string</code> | Variable name where the rates will be cached in local storage |
-| settings.API_URL | <code>string</code> | API Endpoint url |
+| settings.API | <code>object</code> | object API configuration object |
+| settings.API.url | <code>string</code> | API Endpoint url |
+| settings.API.queryParams | <code>object</code> | Query parameters key pair values |
+| settings.API.queryParams.apiKey | <code>string</code> | API key for non-free version of the API |
+| settings.API.queryParams.compact | <code>string</code> | API response object type |
 
 <a name="module_CurrencyConverter..getConfig"></a>
 
@@ -69,7 +74,11 @@ Returns CurrencyConverter settings object
 | settings.CACHE_TO_LOCAL_STORAGE | <code>number</code> | Cache conversion rate to local storage, if available |
 | settings.RATES_VALIDITY_HOURS | <code>number</code> | Cached conversion rate validity in hours |
 | settings.LOCAL_STORAGE_VARIABLE_NAME | <code>string</code> | Variable name where the rates will be cached in local storage |
-| settings.API_URL | <code>string</code> | API Endpoint url |
+| settings.API | <code>object</code> | object API configuration object |
+| settings.API.url | <code>string</code> | API Endpoint url |
+| settings.API.queryParams | <code>object</code> | Query parameters key pair values |
+| settings.API.queryParams.apiKey | <code>string</code> | API key for non-free version of the API |
+| settings.API.queryParams.compact | <code>string</code> | API response object type |
 
 <a name="module_CurrencyConverter..fetchQuote"></a>
 
@@ -286,4 +295,13 @@ Retrieves a value from the local storage for the given key. On error returns emp
 Tests the existence of the localStorage object on the global object
 
 **Kind**: inner method of <code>[CurrencyConverter](#module_CurrencyConverter)</code>  
-➜  js-currency-converter git:(master) 
+<a name="module_CurrencyConverter..buildUrl"></a>
+
+### CurrencyConverter~buildUrl(queryParams) ⇒ <code>string</code>
+Builds API endpoint url from SETTINGS.API.url, SETTINGS.API.queryParams, and query parameters passed in
+
+**Kind**: inner method of <code>[CurrencyConverter](#module_CurrencyConverter)</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| queryParams | <code>object</code> | Query parameter key pair values |
