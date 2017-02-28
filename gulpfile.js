@@ -11,9 +11,20 @@ var MODULE_NAME = require('./package.json').name,
 	concat = require('gulp-concat'),
 	rename = require('gulp-rename'),
 	uglify = require('gulp-uglify'),
+	fs = require('fs'),
 	eslint = require('gulp-eslint'),
 	exec = require('child_process').exec,
 	karmaServer = require('karma').Server;
+
+// Build tasks
+gulp.task('eslint', function () {
+	return gulp.src(PATHS.js)
+		.pipe(eslint({
+			configFile: PATHS.eslintConfigFile
+		}))
+		.pipe(eslint.format())
+		.pipe(eslint.failAfterError());
+});
 
 gulp.task('scripts', ['eslint'], function() {  
 	return gulp.src([PATHS.js])
@@ -24,30 +35,28 @@ gulp.task('scripts', ['eslint'], function() {
 		.pipe(gulp.dest(PATHS.build));
 });
 
-gulp.task('build', ['scripts'], function () {
-	return exec('npm run jsdoc', function () {
-		console.log(MODULE_NAME, ' built!');
-	});
-});
-
-gulp.task('eslint', function () {
-
-	return gulp.src(PATHS.js)
-		.pipe(eslint({
-			configFile: PATHS.eslintConfigFile
-		}))
-		.pipe(eslint.format())
-		.pipe(eslint.failAfterError());
-
-});
-
 gulp.task('test', function (done) {
 	new karmaServer({
 		configFile: __dirname + '/karma.config.js'
 	}, done).start();
 });
 
-gulp.task('demo-build', ['build'], function () {
+gulp.task('build', ['scripts', 'test'], function () {
+	return exec('npm run jsdoc', function () {
+		console.log(MODULE_NAME, ' built!');
+	});
+});
+
+// Demo tasks
+gulp.task('create-demo-index', function(done){
+	var indexHtml = '<!DOCTYPE html><html><head><title>js-currency-converter Demo</title><script type="text/javascript" src="jquery.js"></script><script type="text/javascript" src="js-currency-converter.js"></script></head><body style="font-size: 38px;"><h4>Converting 100 EUR to USD</h4><p>100 EUR = <span id="converted1"></span> USD</p><h4>USD to EUR conversion rate</h4><p>USD to EUR = <span id="converted2"></span></p><h4>USD to EUR conversion rate from cache</h4><p>USD to EUR = <span id="converted3"></span></p><script type="text/javascript">var converter = CurrencyConverter({API : { url: \'/convert\' }});converter.convertAmount(100, \'USD\', \'EUR\').done(function (response) {document.getElementById(\'converted1\').innerHTML = response.value;}).fail(function (error) {console.error(error);});converter.fetchQuote(\'USD\', \'EUR\').done(function (rate) {document.getElementById(\'converted2\').innerHTML = rate;}).fail(function (error) {console.error(error);});converter.getRate(\'USD\', \'EUR\').done(function (response) {document.getElementById(\'converted3\').innerHTML = response.rate;}).fail(function (error) {console.error(error);});</script></body></html>';	
+	if (!fs.existsSync(PATHS.demo)) {
+		fs.mkdirSync(PATHS.demo);
+	};
+  	fs.writeFile(PATHS.demo +  '/index.html', indexHtml, done);
+});
+
+gulp.task('demo-build', ['build', 'create-demo-index'], function () {
 	return gulp.src([PATHS.jquery, PATHS.build + '/' + MODULE_NAME + '.js'])
 		.pipe(gulp.dest(PATHS.demo));
 });
@@ -56,4 +65,5 @@ gulp.task('demo', ['demo-build'], function () {
 	exec(' http-server ./demo -p 8080 --cors -P \'http://free.currencyconverterapi.com/api/v3\' -o -c-1');
 });
 
+// Default task
 gulp.task('default', ['build']);
