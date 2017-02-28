@@ -68,7 +68,7 @@ converter.fetchQuote('USD', 'EUR')
 
 ## Documentation
 
-**Version**: 1.2.0  
+**Version**: 1.3.1  
 
 * [CurrencyConverter](#module_CurrencyConverter)
     * [~config(settings)](#module_CurrencyConverter..config)

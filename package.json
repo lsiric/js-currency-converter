@@ -1,6 +1,6 @@
 {
   "name": "js-currency-converter",
-  "version": "1.2.1",
+  "version": "1.3.1",
   "description": "Javascript module for currency conversion, based on free.currencyconverterapi.com",
   "main": "js-currency-converter.js",
   "scripts": {

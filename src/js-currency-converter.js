@@ -4,7 +4,7 @@
 	/** 
 	 * @module CurrencyConverter
 	 * @description JavaScript currency converter
-	 * @version 1.2.1
+	 * @version 1.3.1
 	 */
 	define(['jquery'], function ($) {
 
