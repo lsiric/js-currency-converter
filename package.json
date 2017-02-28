@@ -8,7 +8,7 @@
     "build": "gulp build",
     "lint": "gulp eslint",
     "demo": "gulp demo",
-    "jsdoc": "jsdoc ./src -d ./docs"
+    "jsdoc": "jsdoc ./src -d ./docs --package package.json"
   },
   "keywords": [
     "currency",
