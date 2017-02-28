@@ -41,8 +41,10 @@ gulp.task('test', function (done) {
 	}, done).start();
 });
 
-gulp.task('build', ['scripts', 'test'], function () {
-	return exec('npm run jsdoc');
+gulp.task('build', ['scripts', 'test']);
+
+gulp.task('docs', function () {
+	return exec('jsdoc ./src -d ./docs');
 });
 
 // Demo tasks

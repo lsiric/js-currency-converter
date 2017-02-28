@@ -70,9 +70,16 @@ converter.fetchQuote('USD', 'EUR')
 
 To see it in action, clone the repo, run `npm install`, followed by `gulp demo`.
 
+## Contribution
+
+1. Fork the repo
+2. Add awesome stuff
+3. Run `gulp docs` to generate fresh documentation
+4. Submit PR 
+
 ## Documentation
 
-**Version**: 1.3.2  
+**Version**: 1.3.3  
 
 * [CurrencyConverter](#module_CurrencyConverter)
     * [~config(settings)](#module_CurrencyConverter..config)
