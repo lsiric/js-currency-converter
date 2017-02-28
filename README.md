@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/lsiric/js-currency-converter.svg?branch=master)](https://travis-ci.org/lsiric/js-currency-converter)
+
 ## js-currency-converter
 
 js-currency-converter is a currency conversion javascript module, based on [Currency Converter API](http://free.currencyconverterapi.com)
