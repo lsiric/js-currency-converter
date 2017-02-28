@@ -5,3 +5,6 @@ before_script:
   - npm install -g gulp
   - gulp build
 script: gulp
+branches:
+  only:
+    - master
