@@ -1,13 +1,13 @@
 {
   "name": "js-currency-converter",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Javascript module for currency conversion, based on free.currencyconverterapi.com",
   "main": "js-currency-converter.js",
   "scripts": {
-    "test":  "gulp test",
+    "test": "gulp test",
     "build": "gulp build",
-    "lint":  "gulp eslint",
-    "demo":  "gulp demo",
+    "lint": "gulp eslint",
+    "demo": "gulp demo",
     "jsdoc": "jsdoc ./src -d ./docs"
   },
   "keywords": [

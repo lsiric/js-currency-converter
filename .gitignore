@@ -1,6 +1,7 @@
 /node_modules
 /misc
 /spec
+/demo
 debug.log
 npm-debug.log
 *.log

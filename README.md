@@ -10,6 +10,60 @@ Include `js-currency-converter.js`, or the minified version `js-currency-convert
 
 jQuery is the only dependency, hence it has to be included **before** `js-currency-converter`.
 
+### Instantiation
+
+To create a new intance of CurrencyConverter:
+
+`var converter = CurrencyConverter();`
+
+Default CurrencyConverter url pointing to the free version of the API (http://free.currencyconverterapi.com/api/v3/convert). 
+
+If you have the paid version of the API you just change the Url and add your `apiKey` to the queryParams: 
+
+```
+var converter = CurrencyConverter({
+    API : { 
+        url: 'http://www.currencyconverterapi.com/api/v3/convert',
+        queryParams: {
+            apiKey: '987654321'
+        }
+    }
+});
+```
+
+### Convert Amount
+
+To convert an amount of money, you can use convertAmount function:
+
+```
+converter.convertAmount(100, 'USD', 'EUR')
+.done(function (response) {
+    console.log(response.value);
+});
+```
+
+### Get Rate
+
+To get an exchange rate for a currency you can use `getRate` function. If there is a cached rate available, it will be resolved, without fetching a fresh one from the server.
+
+```
+converter.getRate('USD', 'EUR')
+.done(function (response) {
+    console.log(response.rate);
+})
+```
+
+### Fetch Quote
+
+To get a fresh exchange rate **from a server** you can use `fetchQuote` function:
+
+```
+converter.fetchQuote('USD', 'EUR')
+.done(function (exchangeRate) {
+    console.log(exchangeRate);
+})
+```
+
 ## Documentation
 
 **Version**: 1.2.0  
