@@ -1,10 +1,10 @@
 language: node_js
 node_js:
   - "6"
+script: gulp
 before_script:
   - npm install -g gulp
   - gulp build
-script: gulp
 branches:
   only:
     - master
