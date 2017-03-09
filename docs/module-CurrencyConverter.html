@@ -144,7 +144,7 @@
 
 
 <div class="description">
-    Builds API endpoint url from SETTINGS.API.url, SETTINGS.API.queryParams, and query parameters passed in
+    Builds API endpoint url from SETTINGS.API.url, SETTINGS.API.queryParams, and queryParams passed in
 </div>
 
 
@@ -237,7 +237,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line458">line 458</a>
+        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line462">line 462</a>
     </li></ul></dd>
     
 
@@ -337,7 +337,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line366">line 366</a>
+        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line385">line 385</a>
     </li></ul></dd>
     
 
@@ -532,7 +532,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line321">line 321</a>
+        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line337">line 337</a>
     </li></ul></dd>
     
 
@@ -632,7 +632,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line355">line 355</a>
+        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line374">line 374</a>
     </li></ul></dd>
     
 
@@ -1044,7 +1044,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line71">line 71</a>
+        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line70">line 70</a>
     </li></ul></dd>
     
 
@@ -1075,7 +1075,7 @@
 
     
 
-    <h4 class="name" id="~convertAmount"><span class="type-signature">(inner) </span>convertAmount<span class="signature">(amount, fromCurrency, toCurrency)</span><span class="type-signature"> &rarr; {Promise.&lt;conversionObject>}</span></h4>
+    <h4 class="name" id="~convertAmount"><span class="type-signature">(inner) </span>convertAmount<span class="signature">(amount, &hellip;conversions)</span><span class="type-signature"> &rarr; {Promise.&lt;conversionObject>}</span></h4>
 
     
 
@@ -1106,6 +1106,8 @@
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -1131,17 +1133,25 @@
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last">Amount of money converting</td>
+            <td class="description last">First parameter is the amount of money converting</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>fromCurrency</code></td>
+                <td class="name"><code>conversions</code></td>
             
 
             <td class="type">
@@ -1154,33 +1164,20 @@
             </td>
 
             
-
-            
-
-            <td class="description last">Currency converting from</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>toCurrency</code></td>
-            
-
-            <td class="type">
-            
+                <td class="attributes">
                 
-<span class="param-type">string</span>
 
+                
+
+                
+                    &lt;repeatable><br>
+                
+                </td>
+            
 
             
-            </td>
 
-            
-
-            
-
-            <td class="description last">Currency converting to</td>
+            <td class="description last">All following string parameters are conversion strings</td>
         </tr>
 
     
@@ -1218,7 +1215,7 @@
 
         <tr>
             
-                <td class="name"><code>conversionObject.value</code></td>
+                <td class="name"><code>conversionObject.amount</code></td>
             
 
             <td class="type">
@@ -1241,7 +1238,7 @@
 
         <tr>
             
-                <td class="name"><code>conversionObject.rate</code></td>
+                <td class="name"><code>conversionObject.val</code></td>
             
 
             <td class="type">
@@ -1319,7 +1316,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line210">line 210</a>
+        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line223">line 223</a>
     </li></ul></dd>
     
 
@@ -1372,7 +1369,7 @@
 
     
 
-    <h4 class="name" id="~fetchQuote"><span class="type-signature">(inner) </span>fetchQuote<span class="signature">(fromCurrency, toCurrency)</span><span class="type-signature"> &rarr; {Promise.&lt;number>}</span></h4>
+    <h4 class="name" id="~fetchQuote"><span class="type-signature">(inner) </span>fetchQuote<span class="signature">(&hellip;conversions)</span><span class="type-signature"> &rarr; {Promise.&lt;conversionObject>}</span></h4>
 
     
 
@@ -1403,6 +1400,8 @@
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -1415,7 +1414,7 @@
 
         <tr>
             
-                <td class="name"><code>fromCurrency</code></td>
+                <td class="name"><code>conversions</code></td>
             
 
             <td class="type">
@@ -1428,33 +1427,20 @@
             </td>
 
             
-
-            
-
-            <td class="description last">Currency converting from</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>toCurrency</code></td>
-            
-
-            <td class="type">
-            
+                <td class="attributes">
                 
-<span class="param-type">string</span>
 
+                
+
+                
+                    &lt;repeatable><br>
+                
+                </td>
+            
 
             
-            </td>
 
-            
-
-            
-
-            <td class="description last">Currency converting to</td>
+            <td class="description last">Conversion strings. Multiple conversion strings can be passed in simultaneously, the api will handle all of them in one call. Results will be resolved all at once in the conversionObject. Currency codes inside of the conversion string have to be delimited by '_' (USD_EUR, GBP_KRW, etc.).</td>
         </tr>
 
     
@@ -1462,6 +1448,58 @@
 </table>
 
 
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>conversionObject.val</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">conversion rate</td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
@@ -1495,7 +1533,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line111">line 111</a>
+        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line110">line 110</a>
     </li></ul></dd>
     
 
@@ -1522,7 +1560,7 @@
 
         
 <div class="param-desc">
-    Resolves to conversion rate number
+    Resolves to conversion rate object
 </div>
 
 
@@ -1533,7 +1571,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;number></span>
+<span class="param-type">Promise.&lt;conversionObject></span>
 
 
     </dd>
@@ -1862,7 +1900,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line92">line 92</a>
+        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line91">line 91</a>
     </li></ul></dd>
     
 
@@ -2011,7 +2049,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line269">line 269</a>
+        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line285">line 285</a>
     </li></ul></dd>
     
 
@@ -2164,7 +2202,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line421">line 421</a>
+        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line425">line 425</a>
     </li></ul></dd>
     
 
@@ -2213,7 +2251,7 @@
 
     
 
-    <h4 class="name" id="~getRate"><span class="type-signature">(inner) </span>getRate<span class="signature">(fromCurrency, toCurrency)</span><span class="type-signature"> &rarr; {Promise.&lt;number>}</span></h4>
+    <h4 class="name" id="~getRate"><span class="type-signature">(inner) </span>getRate<span class="signature">(&hellip;conversions)</span><span class="type-signature"> &rarr; {Promise.&lt;conversionObject>}</span></h4>
 
     
 
@@ -2248,181 +2286,7 @@ If the rate is available in the cache and expired, and API rate fetch fails, exp
         <th>Type</th>
 
         
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>fromCurrency</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Currency converting from</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>toCurrency</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Currency converting to</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line157">line 157</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    Resolves to conversion rate number
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise.&lt;number></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="~getRateFromCache"><span class="type-signature">(inner) </span>getRateFromCache<span class="signature">(query)</span><span class="type-signature"> &rarr; {conversionObject}</span></h4>
-
-    
-
-
-
-<div class="description">
-    Returns the conversion rate object form memory for the given query
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
+        <th>Attributes</th>
         
 
         
@@ -2436,7 +2300,7 @@ If the rate is available in the cache and expired, and API rate fetch fails, exp
 
         <tr>
             
-                <td class="name"><code>query</code></td>
+                <td class="name"><code>conversions</code></td>
             
 
             <td class="type">
@@ -2449,10 +2313,20 @@ If the rate is available in the cache and expired, and API rate fetch fails, exp
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                    &lt;repeatable><br>
+                
+                </td>
+            
 
             
 
-            <td class="description last">RATETO_RATEFROM string</td>
+            <td class="description last">Conversion strings. Multiple conversion strings can be passed in simultaneously. Cached and non expired conversion rates will be used, and non-cached ones will be fetched from the server. Results will be merged and resolved through conversionObject.</td>
         </tr>
 
     
@@ -2490,7 +2364,186 @@ If the rate is available in the cache and expired, and API rate fetch fails, exp
 
         <tr>
             
-                <td class="name"><code>conversionObject.value</code></td>
+                <td class="name"><code>conversionObject.val</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">conversion rate</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>conversionObject.expired</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">conversion rate expiriy flag</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line162">line 162</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Resolves to conversion rate object
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;conversionObject></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~getRateFromCache"><span class="type-signature">(inner) </span>getRateFromCache<span class="signature">()</span><span class="type-signature"> &rarr; {conversionObject}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Returns the conversion rate object form memory for the given query
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>conversionObject.val</code></td>
             
 
             <td class="type">
@@ -2513,13 +2566,13 @@ If the rate is available in the cache and expired, and API rate fetch fails, exp
 
         <tr>
             
-                <td class="name"><code>conversionObject.rate</code></td>
+                <td class="name"><code>conversionObject.expired</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">boolean</span>
 
 
             
@@ -2568,7 +2621,7 @@ If the rate is available in the cache and expired, and API rate fetch fails, exp
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line341">line 341</a>
+        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line357">line 357</a>
     </li></ul></dd>
     
 
@@ -2717,7 +2770,7 @@ If the rate is available in the cache and expired, and API rate fetch fails, exp
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line257">line 257</a>
+        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line273">line 273</a>
     </li></ul></dd>
     
 
@@ -2866,7 +2919,7 @@ If the rate is available in the cache and expired, and API rate fetch fails, exp
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line293">line 293</a>
+        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line309">line 309</a>
     </li></ul></dd>
     
 
@@ -2966,7 +3019,7 @@ If the rate is available in the cache and expired, and API rate fetch fails, exp
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line441">line 441</a>
+        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line445">line 445</a>
     </li></ul></dd>
     
 
@@ -3115,7 +3168,7 @@ If the rate is available in the cache and expired, and API rate fetch fails, exp
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line392">line 392</a>
+        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line396">line 396</a>
     </li></ul></dd>
     
 
@@ -3264,7 +3317,7 @@ If the rate is available in the cache and expired, and API rate fetch fails, exp
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line281">line 281</a>
+        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line297">line 297</a>
     </li></ul></dd>
     
 
@@ -3413,7 +3466,7 @@ If the rate is available in the cache and expired, and API rate fetch fails, exp
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line308">line 308</a>
+        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line324">line 324</a>
     </li></ul></dd>
     
 
@@ -3585,7 +3638,7 @@ If the rate is available in the cache and expired, and API rate fetch fails, exp
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line245">line 245</a>
+        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line261">line 261</a>
     </li></ul></dd>
     
 
@@ -3739,7 +3792,7 @@ If the rate is available in the cache and expired, and API rate fetch fails, exp
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line404">line 404</a>
+        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line408">line 408</a>
     </li></ul></dd>
     
 
@@ -3784,178 +3837,6 @@ If the rate is available in the cache and expired, and API rate fetch fails, exp
 
 
         
-            
-
-    
-
-    <h4 class="name" id="~toQuery"><span class="type-signature">(inner) </span>toQuery<span class="signature">(fromCurrency, toCurrency)</span><span class="type-signature"> &rarr; {string}</span></h4>
-
-    
-
-
-
-<div class="description">
-    Returns the concatenated string of the two valued passed in, with underscore (_) as a concat character
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>fromCurrency</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Rate we are converting from</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>toCurrency</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Rate we are converting to</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="js-currency-converter.js.html">js-currency-converter.js</a>, <a href="js-currency-converter.js.html#line379">line 379</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">string</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
     
 
     
@@ -3977,7 +3858,7 @@ If the rate is available in the cache and expired, and API rate fetch fails, exp
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Feb 28 2017 07:44:40 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Thu Mar 09 2017 08:39:57 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -1,7 +1,7 @@
 describe('CurrencyConverter', function() {
 	'use strict';
 
-	var toQuery = function (fromCurrency, toCurrency) {
+	var toQueryCode = function (fromCurrency, toCurrency) {
 		return (fromCurrency || '') + '_' + (toCurrency || '');
 	}
 
@@ -23,8 +23,53 @@ describe('CurrencyConverter', function() {
 	// TEST DATA
 	var fromRate = 'EUR',
 		toRate = 'USD',
-		query = toQuery(fromRate, toRate),
+		query = toQueryCode(fromRate, toRate),
 		errorResponse = 'ERROR',
+		simpleResponse = {
+			'USD_EUR': {
+				'val': 0.94957744
+			}
+		},
+		simpleMultipleResponse = {
+			'USD_EUR': {
+				'val': 0.94957744
+			},
+			'EUR_USD': {
+				'val': 1.0542
+			}
+		},
+		fullMultipleResponse = {
+			'query': {
+				'count': 2
+			},
+			'results': {
+				'USD_EUR': {
+					'fr': 'USD',
+					'id': 'USD_EUR',
+					'to': 'EUR',
+					'val': 0.94957744
+				},
+				'EUR_USD': {
+					'val': 1.0531,
+					'id': 'EUR_USD',
+					'to': 'USD',
+					'fr': 'EUR'
+				}
+			}
+		},
+		fullResponse = {
+			'query': {
+				'count': 2
+			},
+			'results': {
+				'USD_EUR': {
+					'fr': 'USD',
+					'id': 'USD_EUR',
+					'to': 'EUR',
+					'val': 0.94957744
+				}
+			}
+		},
 		serverResponse = {
 			'EUR_USD': {
 				val: 1
@@ -110,43 +155,24 @@ describe('CurrencyConverter', function() {
 
 	describe('convertAmount', function () {
 
-		it('should return amount, rate and expired flag', function (done) {
-			var rate = {
-				expired: false,
-				rate: 1
-			};
-			spyOn(converter, 'getRate').and.returnValue(jQuery.Deferred().resolve(rate));
+		it('should successfuly convert 100USD to 94.9EUR', function (done) {
+			var query = 'USD_EUR';
+			spyOn(converter, 'getRate').and.returnValue(jQuery.Deferred().resolve(simpleResponse));
 
-			converter.convertAmount(100, 'EUR', 'USD').done(function (result) {
-				expect(result.expired).toEqual(false);
-				expect(result.rate).toEqual(1);
-				expect(result.value).toEqual(100);
+			converter.convertAmount(100, query).done(function (result) {
+				expect(result[query].amount).toEqual(94.957744);
 				done();
 			});
 		});
 
-		it('should successfuly convert 100USD to EUR', function (done) {
-			var rate = {
-				expired: false,
-				rate: 0.9
-			};
-			spyOn(converter, 'getRate').and.returnValue(jQuery.Deferred().resolve(rate));
+		it('should convert amount with expired rate upon API error', function (done) {
+			var query = 'USD_EUR';
+			converter.cacheRate(query, simpleResponse[query].val, new Date('11/11/2000'));
+			spyOn(jQuery, 'get').and.returnValue(jQuery.Deferred().reject('error'));
 
-			converter.convertAmount(100, 'USD', 'EUR').done(function (result) {
-				expect(result.value).toEqual(90);
-				done();
-			});
-		});
-
-		it('should successfuly convert 100USD to 50EUR', function (done) {
-			var rate = {
-				expired: false,
-				rate: 0.5
-			};
-			spyOn(converter, 'getRate').and.returnValue(jQuery.Deferred().resolve(rate));
-
-			converter.convertAmount(100, 'EUR', 'USD').done(function (result) {
-				expect(result.value).toEqual(50);
+			converter.convertAmount(100, query).done(function (result) {
+				expect(result[query].expired).toEqual(true);
+				expect(result[query].amount).toEqual(94.957744);
 				done();
 			});
 		});
@@ -155,7 +181,7 @@ describe('CurrencyConverter', function() {
 			var error = 'CONVERSION ERROR';
 			spyOn(converter, 'getRate').and.returnValue(jQuery.Deferred().reject(error));
 
-			converter.convertAmount(100, 'EUR', 'USD').fail(function (er) {
+			converter.convertAmount(100, 'EUR_USD').fail(function (er) {
 				expect(er).toEqual(error);
 				done();
 			});
@@ -166,35 +192,58 @@ describe('CurrencyConverter', function() {
 	describe('fetchQuote', function () {
 
 		it('should cache API calls in progress', function () {
-			spyOn(jQuery, 'get').and.returnValue(jQuery.Deferred().resolve(serverResponse));
-
-			var callInProgress = converter.fetchQuote(fromRate, toRate);
-
-			expect(converter.getConversionInProgress(query)).toBe(callInProgress);
+			var conversions = ['USD_EUR', 'EUR_USD'];
+			spyOn(jQuery, 'get').and.returnValue(jQuery.Deferred().resolve(fullResponse));
+			var callInProgress = converter.fetchQuote.apply(null, conversions);	
+			expect(converter.getConversionInProgress(conversions)).toBe(callInProgress);
 		});
 
 		it('should return API calls in progress', function () {
-			spyOn(jQuery, 'get').and.returnValue(jQuery.Deferred().resolve(serverResponse));
-			converter.fetchQuote(fromRate, toRate);
-			var callInProgress = converter.fetchQuote(fromRate, toRate);
+			var conversions = ['USD_EUR', 'EUR_USD'];
+			spyOn(jQuery, 'get').and.returnValue(jQuery.Deferred().resolve(fullResponse));
+			var callInProgress = converter.fetchQuote.apply(null, conversions);
 
-			expect(converter.getConversionInProgress(query)).toBe(callInProgress);
+			expect(converter.fetchQuote.apply(null, conversions)).toBe(callInProgress);
 		});
 
-		it('should call default API.url with EUR_USD query', function (done) {
-			spyOn(jQuery, 'get').and.returnValue(jQuery.Deferred().resolve(serverResponse));
+		it('should return simple conversion objects for USD_EUR and EUR_USD', function (done) {
+			var conversions = ['USD_EUR', 'EUR_USD'];
+			converter = window.CurrencyConverter({ API: { queryParams: { compact: 'y' } } });
+			spyOn(jQuery, 'get').and.returnValue(jQuery.Deferred().resolve(simpleMultipleResponse));
 
-			converter.fetchQuote(fromRate, toRate).done(function (result) {
-				expect(jQuery.get).toHaveBeenCalledWith(converter.buildUrl({q:query}));
+			converter.fetchQuote.apply(null, conversions).done(function (result) {
+				expect(result).toEqual(simpleMultipleResponse);
 				done();
 			});
 		});
 
-		it('should return conversion rate 1', function (done) {
-			spyOn(jQuery, 'get').and.returnValue(jQuery.Deferred().resolve(serverResponse));
+		it('should return simple conversion object for USD_EUR', function (done) {
+			var conversions = ['USD_EUR'];
+			converter = window.CurrencyConverter({ API: { queryParams: { compact: 'y' } } });
+			spyOn(jQuery, 'get').and.returnValue(jQuery.Deferred().resolve(simpleResponse));
 
-			converter.fetchQuote(fromRate, toRate).done(function (result) {
-				expect(result).toEqual(1);
+			converter.fetchQuote.apply(null, conversions).done(function (result) {
+				expect(result).toEqual(simpleResponse);
+				done();
+			});
+		});
+
+		it('should return full conversion objects for USD_EUR and EUR_USD', function (done) {
+			var conversions = ['USD_EUR', 'EUR_USD'];
+			spyOn(jQuery, 'get').and.returnValue(jQuery.Deferred().resolve(fullMultipleResponse));
+
+			converter.fetchQuote.apply(null, conversions).done(function (result) {
+				expect(result).toEqual(fullMultipleResponse);
+				done();
+			});
+		});
+
+		it('should return full conversion object for USD_EUR', function (done) {
+			var conversions = ['USD_EUR'];
+			spyOn(jQuery, 'get').and.returnValue(jQuery.Deferred().resolve(fullResponse));
+
+			converter.fetchQuote.apply(null, conversions).done(function (result) {
+				expect(result).toEqual(fullResponse);
 				done();
 			});
 		});
@@ -217,48 +266,50 @@ describe('CurrencyConverter', function() {
 			localStorage.clear();
 		});
 
-		it('should resolve a rate object with "expired" and "rate" properties', function (done) {
-			spyOn(jQuery, 'get').and.returnValue(jQuery.Deferred().resolve(serverResponse));
+		it('should resolve a simple rate from a server', function (done) {
+			var conversions = ['USD_EUR'];
+			spyOn(jQuery, 'get').and.returnValue(jQuery.Deferred().resolve(simpleResponse));
 
-			converter.getRate(fromRate, toRate).done(function (result) {
-				expect(result.expired).toEqual(false);
-				expect(result.rate).toEqual(1);
-				done();
-			});
-		});
-
-		it('should resolve a fresh new rate from the server', function (done) {
-			spyOn(jQuery, 'get').and.returnValue(jQuery.Deferred().resolve(serverResponse));
-
-			converter.getRate(fromRate, toRate).done(function (result) {
-				expect(jQuery.get).toHaveBeenCalled();
-				expect(result).toEqual(rate);
+			converter.getRate.apply(null, conversions).done(function (result) {
+				expect(result).toEqual(simpleResponse);
 				done();
 			});
 		});
 
 		it('should resolve a cached rate', function (done) {
-			spyOn(jQuery, 'get').and.returnValue(jQuery.Deferred().resolve(serverResponse));
+
+			var query = 'USD_EUR';
+			var result = {};
+			result[query] = {
+				val: simpleResponse[query].val,
+				expired: false
+			};
 			// cache rate
-			converter.cacheRate(query, serverResponse[query].val, new Date());
-			converter.getRate(fromRate, toRate).done(function (result) {
+			converter.cacheRate(query, simpleResponse[query].val, new Date());
+			spyOn(jQuery, 'get').and.returnValue(jQuery.Deferred().resolve(simpleResponse));
+			
+			converter.getRate(query).done(function (result) {
 				expect(jQuery.get).not.toHaveBeenCalled();
-				expect(result).toEqual(rate);
+				expect(result).toEqual(result);
 				done();
 			});
 		});
 
 		it('should resolve an expired cached rate on api error', function (done) {
-			spyOn(jQuery, 'get').and.returnValue(jQuery.Deferred().reject(errorResponse));
-			// set cached rate as expired
-			converter.cacheRate(query, serverResponse[query].val, new Date('11/11/2000'));
 
-			converter.getRate(fromRate, toRate).done(function (result) {
+			var query = 'USD_EUR';
+			var result = {};
+			result[query] = {
+				val: simpleResponse[query].val,
+				expired: true
+			};
+			// cache old rate
+			converter.cacheRate(query, simpleResponse[query].val, new Date('11/11/2000'));
+			spyOn(jQuery, 'get').and.returnValue(jQuery.Deferred().resolve(simpleResponse));
+
+			converter.getRate(query).done(function (result) {
 				expect(jQuery.get).toHaveBeenCalled();
-				expect(result).toEqual({
-					expired: true,
-					rate: 1
-				});
+				expect(result).toEqual(result);
 				done();
 			});
 		});
@@ -341,7 +392,7 @@ describe('CurrencyConverter', function() {
 		var rateName = 'RANDOM_RATE';
 		var rate = {};
 		rate[rateName] = {
-			value : 0.5,
+			val : 0.5,
 			date : new Date('11/11/2011')
 		};
 		
@@ -352,13 +403,13 @@ describe('CurrencyConverter', function() {
 
 		it('should cache CurrencyConverter rate cache object to local storage', function () {
 			// save to cache object
-			converter.cacheRate(rateName, rate[rateName].value, rate[rateName].date);
+			converter.cacheRate(rateName, rate[rateName].val, rate[rateName].date);
 			// save to local storage
 			converter.cacheToLocalStorage();
 
 			expect(JSON.parse(localStorage.getItem(defaultOptions.LOCAL_STORAGE_VARIABLE_NAME))).toEqual({
 				RANDOM_RATE: { 
-					value: rate[rateName].value, 
+					val: rate[rateName].val, 
 					date: rate[rateName].date.toISOString()
 				}
 			});
@@ -372,7 +423,7 @@ describe('CurrencyConverter', function() {
 		var rateName = 'RANDOM_RATE';
 		var rate = {};
 		rate[rateName] = {
-			value : 0.5,
+			val : 0.5,
 			date : new Date('11/11/2011')
 		};
 		
@@ -388,7 +439,7 @@ describe('CurrencyConverter', function() {
 			});
 
 			// cache to local storage
-			converter.cacheRate(rateName, rate[rateName].value, rate[rateName].date);
+			converter.cacheRate(rateName, rate[rateName].val, rate[rateName].date);
 
 			// new instance of the converter which will cache rates to local storage
 			converter = window.CurrencyConverter({
@@ -396,8 +447,8 @@ describe('CurrencyConverter', function() {
 			});
 
 			expect(converter.getRateFromCache(rateName)).toEqual({
-				value: rate[rateName].value, 
-				date: rate[rateName].date.toISOString()
+				val: rate[rateName].val, 
+				expired: true
 			});
 
 		});
@@ -486,8 +537,8 @@ describe('CurrencyConverter', function() {
 		var rateName = 'RANDOM_RATE';
 		var rate = {};
 		rate[rateName] = {
-			value : 0.5,
-			date : new Date('11/11/2011')
+			val : 0.5,
+			expired : false
 		};
 
 		beforeEach(function () {
@@ -495,7 +546,7 @@ describe('CurrencyConverter', function() {
 		});
 
 		it('should cache rate to internal object', function () {
-			converter.cacheRate(rateName, rate[rateName].value, rate[rateName].date);
+			converter.cacheRate(rateName, rate[rateName].val, new Date());
 			expect(converter.getRateFromCache(rateName)).toEqual(rate[rateName]);
 		});
 
@@ -504,12 +555,13 @@ describe('CurrencyConverter', function() {
 				CACHE_TO_LOCAL_STORAGE: true,
 				LOCAL_STORAGE_VARIABLE_NAME: variableName
 			});
-			converter.cacheRate(rateName, rate[rateName].value, rate[rateName].date);
+			var date = new Date();
+			converter.cacheRate(rateName, rate[rateName].val, date);
 			
 			expect(JSON.parse(localStorage.getItem(variableName))).toEqual({
 				RANDOM_RATE: { 
-					value: rate[rateName].value, 
-					date: rate[rateName].date.toISOString()
+					val: rate[rateName].val, 
+					date: date.toISOString()
 				}
 			});
 		});
@@ -518,15 +570,19 @@ describe('CurrencyConverter', function() {
 
 	describe('getRateFromCache', function () {
 
-		it('should retrieve USD_EUR rate from cache', function () {
+		beforeEach(function () {
+			localStorage.clear();
+		});
+
+		it('should retrieve expired USD_EUR rate from cache', function () {
 			var rateName = 'USD_EUR';
 			var rateValue = 0.5;
-			var rateDate = new Date('11/11/2011');
+			var rateDate = new Date();
 			converter.cacheRate(rateName, rateValue, rateDate);
 
 			expect(converter.getRateFromCache(rateName)).toEqual({
-				value: rateValue,
-				date: rateDate
+				val: rateValue,
+				expired: false
 			});
 		});
 
@@ -537,8 +593,8 @@ describe('CurrencyConverter', function() {
 			converter.cacheRate(rateName, rateValue, rateDate);
 
 			expect(converter.getRateFromCache(rateName)).toEqual({
-				value: rateValue,
-				date: rateDate
+				val: rateValue,
+				expired: true
 			});
 		});
 
@@ -546,18 +602,18 @@ describe('CurrencyConverter', function() {
 
 	describe('utilities', function () {
 		
-		describe('toQuery', function () {
+		describe('toQueryCode', function () {
 			
 			it('should return EUR_USD', function () {
-				expect(converter.toQuery('EUR', 'USD')).toEqual('EUR_USD');
+				expect(converter.toQueryCode('EUR', 'USD')).toEqual('EUR_USD');
 			});
 
 			it('should return GBP_EUR', function () {
-				expect(converter.toQuery('GBP', 'EUR')).toEqual('GBP_EUR');
+				expect(converter.toQueryCode('GBP', 'EUR')).toEqual('GBP_EUR');
 			});
 
 			it('should return _', function () {
-				expect(converter.toQuery()).toEqual('_');
+				expect(converter.toQueryCode()).toEqual('_');
 			});
 
 		});
@@ -671,7 +727,7 @@ describe('CurrencyConverter', function() {
 		describe('buildUrl', function () {
 			
 			it('should return url with default queryParams', function () {
-				expect(converter.buildUrl()).toEqual('http://free.currencyconverterapi.com/api/v3/convert?compact=y&apiKey=&');
+				expect(converter.buildUrl()).toEqual('http://free.currencyconverterapi.com/api/v3/convert?compact=y&apiKey=');
 			});
 
 			it('should return url with default queryParams', function () {
@@ -679,7 +735,7 @@ describe('CurrencyConverter', function() {
 					a: 1,
 					b: 2
 				};
-				expect(converter.buildUrl(queryParams)).toEqual('http://free.currencyconverterapi.com/api/v3/convert?compact=y&apiKey=&a=1&b=2&');
+				expect(converter.buildUrl(queryParams)).toEqual('http://free.currencyconverterapi.com/api/v3/convert?compact=y&apiKey=&a=1&b=2');
 			});
 
 		});

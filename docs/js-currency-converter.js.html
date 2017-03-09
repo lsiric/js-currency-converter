@@ -40,7 +40,7 @@
 			var HOURS = 60 * 60 * 1000,
 				DEFAULTS = {
 					RATES_VALIDITY_HOURS : 24,
-					CACHE_TO_LOCAL_STORAGE : false,
+					CACHE_TO_LOCAL_STORAGE : true,
 					LOCAL_STORAGE_VARIABLE_NAME: 'JS_CURRENCY_CONVERTER_CACHED_RATES',
 					API: {
 						url: 'http://free.currencyconverterapi.com/api/v3/convert',
@@ -81,7 +81,6 @@
 			CurrencyConverter.getRateFromCache = getRateFromCache;
 
 			// UTILITIES
-			CurrencyConverter.toQuery = toQuery;
 			CurrencyConverter.isObject = isObject;
 			CurrencyConverter.setToLocalStorage = setToLocalStorage;
 			CurrencyConverter.getFromLocalStorage = getFromLocalStorage;
@@ -139,14 +138,16 @@
 			/**
 			* @function fetchQuote
 			* @description Returns conversion rate from the API
-			* @param {string} fromCurrency Currency converting from
-			* @param {string} toCurrency Currency converting to
-			* @return {Promise&lt;number>} Resolves to conversion rate number
+			* @param {...string} conversions Conversion strings. Multiple conversion strings can be passed in simultaneously, the api will handle all of them in one call. Results will be resolved all at once in the conversionObject. Currency codes inside of the conversion string have to be delimited by '_' (USD_EUR, GBP_KRW, etc.).
+			* @return {Promise&lt;conversionObject>} Resolves to conversion rate object
+			* @property {number} conversionObject.val conversion rate
 			*/
-			function fetchQuote (fromCurrency, toCurrency) {
+			function fetchQuote () {
 
-				var deferred = $.Deferred();
-				var query = CurrencyConverter.toQuery(fromCurrency, toCurrency);
+				var deferred = $.Deferred(),
+					query = [].slice.call(arguments).join(','),
+					isCompact = SETTINGS.API.queryParams.compact === 'y',
+					results;
 
 				// If the call for the same converesion is in progress, return the same promise
 				if(CurrencyConverter.isConversionInProgress(query)) {
@@ -161,12 +162,16 @@
 				// cache the promise, in case it gets called while this one is in progress
 				CurrencyConverter.setConversionInProgress(query, deferred.promise());
 
-				return deferred.promise()	;
+				return deferred.promise();
 
 				function onSuccess (response) {
-					// cache the result
-					CurrencyConverter.cacheRate(query, response[query].val, new Date());
-					deferred.resolve(response[query].val);
+					// strip the response object 
+					results = isCompact ? response : response.results;
+					// cache the results
+					$.each(results, function (key, val) {
+						CurrencyConverter.cacheRate(key, val.val, new Date());	
+					});
+					deferred.resolve(results);
 				}
 
 				function onError (error) {
@@ -189,48 +194,56 @@
 			* If the conversion rate is not available in the cache, API rate fetch is attempted.
 			* If the rate is available in the cache but expired, API rate fetch is attempted.
 			* If the rate is available in the cache and expired, and API rate fetch fails, expired rate is returned if available.
-			* @param {string} fromCurrency Currency converting from
-			* @param {string} toCurrency Currency converting to
-			* @return {Promise&lt;number>} Resolves to conversion rate number
+			* @param {...string} conversions Conversion strings. Multiple conversion strings can be passed in simultaneously. Cached and non expired conversion rates will be used, and non-cached ones will be fetched from the server. Results will be merged and resolved through conversionObject.
+			* @return {Promise&lt;conversionObject>} Resolves to conversion rate object
+			* @property {number} conversionObject.val conversion rate
+			* @property {number} conversionObject.expired conversion rate expiriy flag
 			*/
-			function getRate (fromCurrency, toCurrency) {
+			function getRate () {
 
-				var deferred = $.Deferred();
-				var query = CurrencyConverter.toQuery(fromCurrency, toCurrency);
+				var queries = [].slice.call(arguments),
+					deferred = $.Deferred(),
+					result = {},
+					nonCachedQueries = [];
 
-				if(CurrencyConverter.isRateCachedAndNonExpired(query)) {
-					resolveRate(false, CACHED_RATES[query].value);
+				// instantly resolve rates which are cached and not expired
+				$.each(queries, function (i, query) {
+					if(CurrencyConverter.isRateCachedAndNonExpired(query)) {
+						result[query] = CurrencyConverter.getRateFromCache(query);
+					} else {
+						nonCachedQueries.push(query);
+					}
+				});
+
+				if(nonCachedQueries.length === 0) {
+					// all conversions are available from the cache
+					return deferred.resolve(result);
 				} else {
-					CurrencyConverter.fetchQuote(fromCurrency, toCurrency)
-					.done(fetchOnSuccess)
-					.fail(oldRateFallback);
+					// some rates have to be fetched from the server
+					CurrencyConverter.fetchQuote(nonCachedQueries)
+						.done(fetchOnSuccess)
+						.fail(oldRateFallback);
 				}
 
 				return deferred.promise();
 
-				function fetchOnSuccess (rate) {
-					resolveRate(false, rate);
+				function fetchOnSuccess (response) {
+					// merge already cached rates and freshly fetched rates
+					deferred.resolve($.extend(result, response));
 				}
 
 				// if the api fails, try to return an expired rate as a failback
 				function oldRateFallback (error) {
-
-					// if rate is cached but expired, resolve old rate
-					if(CurrencyConverter.isRateCached(query)){
-						resolveRate(true, CACHED_RATES[query].value);
-					} else {
-						deferred.reject(error);
-					}
-
-				}
-
-				function resolveRate (isExpired, rateValue) {
-					deferred.resolve({
-						expired: isExpired,
-						rate: rateValue
+					$.each(nonCachedQueries, function (i, query) {
+						// if rate is cached but expired, resolve old rate
+						if(CurrencyConverter.isRateCached(query)){
+							result[query] = CurrencyConverter.getRateFromCache(query);
+						} else {
+							deferred.reject(error);
+						}
 					});
+					deferred.resolve(result);
 				}
-
 			}
 
 
@@ -238,27 +251,30 @@
 			/**
 			* @function convertAmount
 			* @description Converts given amount from given currency to given currency
-			* @param {number} amount Amount of money converting
-			* @param {string} fromCurrency Currency converting from
-			* @param {string} toCurrency Currency converting to
+			* @param {number} amount First parameter is the amount of money converting
+			* @param {...string} conversions All following string parameters are conversion strings 
 			* @return {Promise&lt;conversionObject>} Promise to the conversionObject
-			* @property {number} conversionObject.value converted amount
-			* @property {number} conversionObject.rate conversion rate
+			* @property {number} conversionObject.amount converted amount
+			* @property {number} conversionObject.val conversion rate
 			* @property {boolean} conversionObject.expired is the rate expired (considering RATES_VALIDITY_HOURS)
 			*/
-			function convertAmount (amount, fromCurrency, toCurrency) {
+			function convertAmount () {
 
-				var deferred = $.Deferred();
+				var amount = [].slice.call(arguments, 0, 1)[0],
+					queries = [].slice.call(arguments, 1).join(','),
+					deferred = $.Deferred();
 
-				CurrencyConverter.getRate(fromCurrency, toCurrency)
+				CurrencyConverter.getRate(queries)
 				.done(onSuccess)
 				.fail(onError);
 
-				return deferred.promise()	;
+				return deferred.promise();
 
-				function onSuccess (data) {
-					data.value = amount * data.rate;
-					deferred.resolve(data);
+				function onSuccess (response) {
+					$.each(response, function (key, value) {
+						value.amount = amount * value.val;
+					});
+					deferred.resolve(response);
 				}
 
 				function onError (error) {
@@ -356,7 +372,7 @@
 			*/
 			function cacheRate (rateName, value, date) {
 				CACHED_RATES[rateName] = {
-					value: value,
+					val: value,
 					date: date
 				};
 				if(SETTINGS.CACHE_TO_LOCAL_STORAGE) {
@@ -370,12 +386,15 @@
 			* @function getRateFromCache
 			* @description Returns the conversion rate object form memory for the given query
 			* @return {conversionObject} 
-			* @property {number} conversionObject.value converted amount
-			* @property {number} conversionObject.rate conversion rate
-			* @param {string} query RATETO_RATEFROM string
+			* @property {number} conversionObject.val converted amount
+			* @property {boolean} conversionObject.expired conversion rate
 			*/
 			function getRateFromCache (query) {
-				return CACHED_RATES[query];
+				var rate = $.extend({}, CACHED_RATES[query]);
+				return {
+					val: rate.val,
+					expired: CurrencyConverter.isDateExpired(rate.date)
+				};
 			}
 
 
@@ -398,21 +417,6 @@
 			*/
 			function cacheFromLocalStorage () {
 				CACHED_RATES = CurrencyConverter.getFromLocalStorage(SETTINGS.LOCAL_STORAGE_VARIABLE_NAME);
-			}
-
-
-
-
-
-			/**
-			* @function toQuery
-			* @description Returns the concatenated string of the two valued passed in, with underscore (_) as a concat character
-			* @return {string}
-			* @param {string} fromCurrency Rate we are converting from
-			* @param {string} toCurrency Rate we are converting to
-			*/
-			function toQuery (fromCurrency, toCurrency) {
-				return (fromCurrency || '') + '_' + (toCurrency || '');
 			}
 
 
@@ -485,7 +489,7 @@
 
 			/**
 			* @function buildUrl
-			* @description Builds API endpoint url from SETTINGS.API.url, SETTINGS.API.queryParams, and query parameters passed in 
+			* @description Builds API endpoint url from SETTINGS.API.url, SETTINGS.API.queryParams, and queryParams passed in 
 			* @return {string}
 			* @param {object} queryParams Query parameter key pair values
 			*/					
@@ -495,8 +499,9 @@
 				$.each(params, function (key, value, i) {
 					url += key + '=' + value + '&amp;';
 				});
-				return url;
+				return encodeURI(url.substring(0, url.length-1));
 			}
+
 
 		});
 	});
@@ -524,7 +529,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Feb 28 2017 07:44:40 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Thu Mar 09 2017 08:39:57 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>
