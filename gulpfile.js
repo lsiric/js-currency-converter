@@ -25,7 +25,7 @@ gulp.task('eslint', function () {
 		.pipe(eslint.failAfterError());
 });
 
-gulp.task('scripts', [/*'eslint'*/], function() {  
+gulp.task('scripts', ['eslint'], function() {  
 	return gulp.src([PATHS.js])
 		.pipe(concat(MODULE_NAME + '.js'))
 		.pipe(gulp.dest(PATHS.build))
@@ -40,7 +40,7 @@ gulp.task('test', function (done) {
 	}, done).start();
 });
 
-gulp.task('build', ['scripts'/*, 'test'*/]);
+gulp.task('build', ['scripts', 'test']);
 
 gulp.task('docs', function () {
 	return exec('jsdoc ./src -d ./docs');

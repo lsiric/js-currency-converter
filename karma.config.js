@@ -19,7 +19,7 @@ module.exports = function(config) {
 		port: 9876,
 		colors: true,
 		autoWatch: true,
-		singleRun: false,
+		singleRun: true,
 		coverageReporter: {
 			type : 'html',
 			dir : 'spec/coverage/'

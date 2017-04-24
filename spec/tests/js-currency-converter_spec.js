@@ -601,22 +601,6 @@ describe('CurrencyConverter', function() {
 	});
 
 	describe('utilities', function () {
-		
-		describe('toQueryCode', function () {
-			
-			it('should return EUR_USD', function () {
-				expect(converter.toQueryCode('EUR', 'USD')).toEqual('EUR_USD');
-			});
-
-			it('should return GBP_EUR', function () {
-				expect(converter.toQueryCode('GBP', 'EUR')).toEqual('GBP_EUR');
-			});
-
-			it('should return _', function () {
-				expect(converter.toQueryCode()).toEqual('_');
-			});
-
-		});
 
 		describe('isObject', function () {
 
